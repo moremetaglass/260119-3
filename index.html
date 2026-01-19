@@ -1,0 +1,48 @@
+<script>
+function normalize025(val) {
+  return Math.round(val * 4) / 4;
+}
+
+function makeQR() {
+  const ls = normalize025(parseFloat(lsInput.value) || 0);
+  const lc = normalize025(parseFloat(lcInput.value) || 0);
+  const rs = normalize025(parseFloat(rsInput.value) || 0);
+  const rc = normalize025(parseFloat(rcInput.value) || 0);
+
+  const laVal = parseInt(la.value);
+  const raVal = parseInt(ra.value);
+
+  // ❗ AXIS 유효성 검사
+  if (lc !== 0 && (!laVal || laVal < 1 || laVal > 180)) {
+    alert("왼쪽 눈 난시축(AXIS)을 1~180 사이로 입력해주세요.");
+    return;
+  }
+  if (rc !== 0 && (!raVal || raVal < 1 || raVal > 180)) {
+    alert("오른쪽 눈 난시축(AXIS)을 1~180 사이로 입력해주세요.");
+    return;
+  }
+
+  // 🎯 정품 XR 파서 대응 구조
+  const visionData = {
+    LS: Number(ls.toFixed(2)),
+    LC: Number(lc.toFixed(2)),
+    RS: Number(rs.toFixed(2)),
+    RC: Number(rc.toFixed(2))
+  };
+
+  // AXIS는 조건부 포함
+  if (lc !== 0) visionData.LA = laVal;
+  if (rc !== 0) visionData.RA = raVal;
+
+  const visionBase64 = btoa(
+    unescape(encodeURIComponent(JSON.stringify(visionData)))
+  );
+
+  const payload = JSON.stringify([
+    "I610_EL",
+    "1",
+    visionBase64
+  ]);
+
+  const url =
+    "https://api.qrserver.com/v1/create-qr-code/?size=300x300&
